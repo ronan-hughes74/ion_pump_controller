@@ -1,1 +1,6 @@
+rockdove
+pydux
+anyio-serial
+qasync
+PyQt5
 
