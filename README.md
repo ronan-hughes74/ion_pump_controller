@@ -1,4 +1,4 @@
-Project Structure:
+## Project Structure:
 ion_pump_controller/
 ├── pump_server/
 │   ├── __init__.py
