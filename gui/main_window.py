@@ -3,7 +3,7 @@ from PyQt5.QtCore import QTimer
 import sys
 import asyncio
 from qasync import QEventLoop, asyncSlot
-import rockdove
+import rockdove.client
 
 class IonPumpGUI(QWidget):
     def __init__(self):
