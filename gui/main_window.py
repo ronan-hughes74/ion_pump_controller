@@ -10,6 +10,18 @@ class IonPumpGUI(QWidget):
         self.label = QLabel("Pressure: --")
         self.button = QPushButton("Turn ON Pump")
         self.button.clicked.connect(self.toggle_pump)
+        
+        # Create a QSpinBox to select the pressure threshold
+        self.threshold_spinbox = QSpinBox(self)
+        self.threshold_spinbox.setRange(0, 10000)  # Set range for the threshold
+        self.threshold_spinbox.setValue(500)  # Set default value
+        layout.addWidget(self.threshold_spinbox)
+
+        # Button to apply the threshold
+        self.apply_button = QPushButton("Apply Threshold", self)
+        self.apply_button.clicked.connect(self.apply_threshold)
+        layout.addWidget(self.apply_button)
+
 
         layout = QVBoxLayout()
         layout.addWidget(self.label)
@@ -28,7 +40,11 @@ class IonPumpGUI(QWidget):
             pressure = await self.client.ion_pump.get_pressure()
             self.label.setText(f"Pressure: {pressure:.2e} Torr")
             await asyncio.sleep(1)
-
+            
+    def apply_pump_address(self):
+        threshold = self.trheshold_spinbox.value()
+        self.ion_pump.set_pressure_threshold(threshold)
+    
     @asyncSlot()
     async def toggle_pump(self):
         await self.client.ion_pump.turn_on()
