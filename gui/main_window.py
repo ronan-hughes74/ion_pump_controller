@@ -1,36 +1,38 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QPushButton
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QPushButton, QSpinBox
+from PyQt5.QtCore import QTimer
 import sys
 import asyncio
 from qasync import QEventLoop, asyncSlot
-import rockdove.client
+import rockdove
 
 class IonPumpGUI(QWidget):
     def __init__(self):
         super().__init__()
+
         self.label = QLabel("Pressure: --")
         self.button = QPushButton("Turn ON Pump")
         self.button.clicked.connect(self.toggle_pump)
-        
-        # Create a QSpinBox to select the pressure threshold
-        self.threshold_spinbox = QSpinBox(self)
-        self.threshold_spinbox.setRange(0, 10000)  # Set range for the threshold
-        self.threshold_spinbox.setValue(500)  # Set default value
-        layout.addWidget(self.threshold_spinbox)
 
-        # Button to apply the threshold
+        self.threshold_spinbox = QSpinBox(self)
+        self.threshold_spinbox.setRange(0, 10000)
+        self.threshold_spinbox.setValue(500)
+
         self.apply_button = QPushButton("Apply Threshold", self)
         self.apply_button.clicked.connect(self.apply_threshold)
-        layout.addWidget(self.apply_button)
 
-
-        layout = QVBoxLayout()
-        layout.addWidget(self.label)
-        layout.addWidget(self.button)
-        self.setLayout(layout)
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.button)
+        self.layout.addWidget(self.threshold_spinbox)
+        self.layout.addWidget(self.apply_button)
+        self.setLayout(self.layout)
 
         self.client = None
-        asyncio.create_task(self.setup_client())
 
+        # ✅ Defer async client setup until event loop is running
+        QTimer.singleShot(0, self.setup_client)
+
+    @asyncSlot()
     async def setup_client(self):
         self.client = await rockdove.client.connect("ws://localhost:5000")
         asyncio.create_task(self.poll_pressure())
@@ -40,14 +42,16 @@ class IonPumpGUI(QWidget):
             pressure = await self.client.ion_pump.get_pressure()
             self.label.setText(f"Pressure: {pressure:.2e} Torr")
             await asyncio.sleep(1)
-            
-    def apply_pump_address(self):
-        threshold = self.trheshold_spinbox.value()
-        self.ion_pump.set_pressure_threshold(threshold)
-    
+
+    def apply_threshold(self):
+        threshold = self.threshold_spinbox.value()
+        self.client.ion_pump.set_pressure_threshold(threshold)
+        print(f"Threshold applied: {threshold}")
+
     @asyncSlot()
     async def toggle_pump(self):
         await self.client.ion_pump.turn_on()
+        print("Pump turned on")
 
 def main():
     app = QApplication(sys.argv)
