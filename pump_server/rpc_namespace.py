@@ -1,11 +1,22 @@
-from rockdove.rpc import RPCNamespace
 from pydux.control_support.anyio_extensions import Mutex
-from pydux.control_support.rpc_utils import add_proxies_for_device
 from .ion_pump import IonPump
 
-@add_proxies_for_device(IonPump)
-class IonPumpRPCNamespace(RPCNamespace):
-    def __init__(self, device_mutex: Mutex[IonPump]) -> None:
-        super().__init__()
-        self._device_mutex = device_mutex
+class IonPumpRPCNamespace:
+    def __init__(self, mutex: Mutex[IonPump]):
+        self._mutex = mutex
 
+    async def get_pressure(self) -> float:
+        async with self._mutex.guard() as pump:
+            return await pump.read_pressure()
+
+    async def set_pressure_threshold(self, threshold: int) -> None:
+        async with self._mutex.guard() as pump:
+            pump.set_threshold(threshold)
+
+    async def turn_on(self) -> None:
+        async with self._mutex.guard() as pump:
+            await pump.turn_on()
+
+    async def turn_off(self) -> None:
+        async with self._mutex.guard() as pump:
+            await pump.turn_off()
