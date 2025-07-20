@@ -25,7 +25,7 @@ Command Packet Structure:
 """
 
     async def get_pressure(self) -> float:
-        resp = await self._serial.query("PR?")
+        resp = await self._serial.query(f"~ {get_pump_address()} 0B {calculate_checksum(get_pump_address(), "0B")}")
         return float(resp.strip())
         
     async def get_voltage(self) -> float:
@@ -52,3 +52,18 @@ Command Packet Structure:
     def get_pump_address(self) -> float:
         """Returns the current pressure threshold."""
         return self._pump_address
+    
+    def compute_ascii_checksum(data: str) -> int:
+        checksum = sum(ord(char) for char in data)
+        return checksum
+
+    def calculate_checksum(address, command): 
+        #address must be entered as int, command must be entered as string 
+        #optional data field can be added later if needed. Doing this would likely require taking the entirety of the sent command, calculating the checksum, and adding the checksum to the sent command
+        if address < 10:
+            address_str = f"0{address}"
+        else:
+            address_str = str(address)
+        sumVal = compute_ascii_checksum(address_str) + compute_ascii_checksum(command)
+        sumVal += 32*3 #For spaces
+        return sumVal%256
