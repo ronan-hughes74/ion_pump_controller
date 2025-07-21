@@ -59,14 +59,6 @@ class IonPump:
         resp = await self.serial.query("CR?")
         return float(resp.strip())
 
-    async def turn_on(self) -> None:
-        """Turn the ion pump on."""
-        await self.serial.query("ON")
-
-    async def turn_off(self) -> None:
-        """Turn the ion pump off."""
-        await self.serial.query("OFF")
-
     async def get_status(self) -> str:
         """Query status string from the pump."""
         return await self.serial.query("STATUS?")
