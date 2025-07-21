@@ -20,6 +20,11 @@ class IonPumpRPCNamespace:
     async def get_pressure(self) -> float:
         async with self._mutex.guard() as pump:
             return await pump.get_pressure()
+            
+    async def connect_to_port(self, port_name: str) -> str:
+        async with self._mutex as pump:
+            await pump.connect_to_port(port_name)
+            return f"Connected to {port_name}"
 
     """async def set_pressure_threshold(self, threshold: int) -> None:
         async with self._mutex.guard() as pump:

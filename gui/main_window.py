@@ -52,7 +52,7 @@ class IonPumpGUI(QMainWindow):
         self.refresh_ports()
 
         self.connect_button = QPushButton("Connect to Port")
-        self.connect_button.clicked.connect(self.connect_to_selected_port)
+        self.connect_button.clicked.connect(self.connect_to_port)
 
 
         # --- Layout ---

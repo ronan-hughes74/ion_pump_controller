@@ -20,14 +20,11 @@ async def get_namespace() -> AsyncGenerator[IonPumpRPCNamespace, None]:
     namespace = IonPumpRPCNamespace(mutex)
     yield namespace
 
-
-
 async def main():
     async with get_namespace() as namespace:
         server = RPCServer(namespace)
         print("✅ RPC Server listening on tcp://localhost:1234")
         await server.serve(1234, local_host="localhost")
-
 
 
 

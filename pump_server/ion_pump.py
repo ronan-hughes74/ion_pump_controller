@@ -68,7 +68,7 @@ class IonPump:
         
     # --- Configuration Methods ---
 
-    async def connect(self, port_name: str) -> None:
+    async def connect_to_port(self, port_name: str) -> None:
         """Connect to the serial port."""
         try:
             # Open the serial port
