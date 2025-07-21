@@ -52,7 +52,7 @@ class IonPumpGUI(QMainWindow):
         self.refresh_ports()
 
         self.connect_button = QPushButton("Connect to Port")
-        self.connect_button.clicked.connect(self.connect_to_port)
+        self.connect_button.clicked.connect(self.connect_to_selected_port)
 
 
         # --- Layout ---
@@ -95,8 +95,7 @@ class IonPumpGUI(QMainWindow):
         if self.client:
             selected_port = self.port_selector.currentText()
             asyncio.create_task(self.client.connect_to_port(selected_port))
-
-
+            
     async def setup_client(self):
         async def stream_constructor():
             tls_context = RPCConnection.create_default_noauth_tls_context(ssl.Purpose.SERVER_AUTH)
