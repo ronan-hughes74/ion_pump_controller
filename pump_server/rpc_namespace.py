@@ -1,9 +1,21 @@
 from pydux.control_support.anyio_extensions import Mutex
 from .ion_pump import IonPump
+from contextlib import asynccontextmanager
+
 
 class IonPumpRPCNamespace:
     def __init__(self, mutex: Mutex[IonPump]):
         self._mutex = mutex
+
+    @asynccontextmanager
+    async def make_context(self):
+        # Server-wide setup (e.g., shared state)
+        yield
+
+    @asynccontextmanager
+    async def make_client_context(self, client):
+        # Per-client setup (if needed); can also be a no-op
+        yield
 
     async def get_pressure(self) -> float:
         async with self._mutex.guard() as pump:

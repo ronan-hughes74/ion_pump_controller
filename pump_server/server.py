@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
+
 import anyio
 from rockdove.rpc import RPCServer
 
@@ -20,13 +21,13 @@ async def get_namespace() -> AsyncGenerator[IonPumpRPCNamespace, None]:
     yield namespace
 
 
+
 async def main():
     async with get_namespace() as namespace:
         server = RPCServer(namespace)
         print("✅ RPC Server listening on tcp://localhost:1234")
+        await server.serve(1234, local_host="localhost")
 
-        listener = await anyio.create_tcp_listener(local_host="localhost", local_port=1234)
-        await server.serve(listener)
 
 
 

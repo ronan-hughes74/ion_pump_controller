@@ -51,13 +51,15 @@ class IonPumpGUI(QMainWindow):
 
         connection = await RPCConnection(
             tls_stream,
+            namespace=RemoteRPCClient,  # ✅ FIX: Add the required namespace argument
             PeerDisconnectedError=RemoteRPCClient.PeerDisconnectedError,
-        ).__aenter__()  # Manual context enter because we're not using `async with`
+        ).__aenter__()
 
-        self.client = RemoteRPCClient(connection)
+        self.client = connection.namespace  # This is your actual RemoteRPCClient proxy
 
         # Start pressure polling
         asyncio.create_task(self.poll_pressure())
+
 
     async def poll_pressure(self):
         while True:
