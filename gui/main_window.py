@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QPushButton, QSpinBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QPushButton, QSpinBox
 import sys
 import asyncio
 import ssl
@@ -8,7 +8,7 @@ from rockdove.rpc._clients import RemoteRPCClient
 from rockdove.rpc._connections import RPCConnection  # Needed for direct connection
 import anyio.streams.tls
 
-class IonPumpGUI(QWidget):
+class IonPumpGUI(QMainWindow):
     def __init__(self):
         super().__init__()
 

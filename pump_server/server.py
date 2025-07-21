@@ -25,8 +25,9 @@ async def main():
         server = RPCServer(namespace)
         print("✅ RPC Server listening on tcp://localhost:1234")
 
-        # Let Rockdove + anyio create and manage the TCP listener
-        await server.serve_tcp(port=1234)
+        listener = await anyio.create_tcp_listener(local_host="localhost", local_port=1234)
+        await server.serve(listener)
+
 
 
 if __name__ == "__main__":
