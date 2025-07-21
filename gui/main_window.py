@@ -2,9 +2,10 @@ import sys
 import asyncio
 import ssl
 import random
+import serial.tools.list_ports  # ⬅️ Add this to get available ports
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QVBoxLayout, QPushButton,
-    QSpinBox, QWidget, QHBoxLayout
+    QSpinBox, QWidget, QHBoxLayout, QComboBox
 )
 from PyQt5.QtCore import QTimer
 from qasync import QEventLoop, asyncSlot
@@ -18,13 +19,12 @@ class IonPumpGUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Ion Pump Controller")
+        self.resize(600, 400)
 
         # --- Widgets ---
-        self.label = QLabel("Pressure: --")
-
+        self.label = QLabel("Status: --")
         self.ping_button = QPushButton("Ping Device")
         self.ping_button.clicked.connect(self.ping_device)
-
 
         self.threshold_spinbox = QSpinBox()
         self.threshold_spinbox.setRange(0, 10000)
@@ -37,16 +37,23 @@ class IonPumpGUI(QMainWindow):
         self.extra_button_1 = QPushButton("Task 1")
         self.extra_button_2 = QPushButton("Task 2")
 
-        # --- Graph setup ---
+        # --- Graph Setup ---
         self.graph = pg.PlotWidget()
-        self.graph.setYRange(0, 100)
-        self.x_data = list(range(100))
-        self.y_data = [0] * 100
-        self.plot = self.graph.plot(self.x_data, self.y_data, pen='g')
+        self.graph.setTitle("Pressure Reading")
+        self.graph.setLabel("left", "Pressure", units="Torr")
+        self.graph.setLabel("bottom", "Time", units="s")
+        self.pressure_data = []
+        self.time_data = []
+        self.plot = self.graph.plot(self.time_data, self.pressure_data, pen='y')
+        self.t = 0
+        
+        # --- Serial Port Selector ---
+        self.port_selector = QComboBox()
+        self.refresh_ports()
 
-        self.graph_timer = QTimer()
-        self.graph_timer.timeout.connect(self.update_graph)
-        self.graph_timer.start(500)  # Update graph every 500 ms
+        self.connect_button = QPushButton("Connect to Port")
+        self.connect_button.clicked.connect(self.connect_to_selected_port)
+
 
         # --- Layout ---
         layout = QVBoxLayout()
@@ -57,12 +64,38 @@ class IonPumpGUI(QMainWindow):
         layout.addWidget(self.apply_button)
         layout.addWidget(self.extra_button_1)
         layout.addWidget(self.extra_button_2)
+        layout.addWidget(self.port_selector)
+        layout.addWidget(self.connect_button)
+
 
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
-
+        
         self.client = None
+
+
+        # Refresh port list when app starts
+        self.refresh_ports()
+
+        # Auto-refresh every 5 seconds
+        self.port_refresh_timer = QTimer()
+        self.port_refresh_timer.timeout.connect(self.refresh_ports)
+        self.port_refresh_timer.start(5000)
+        
+    def refresh_ports(self):
+        """Populate the combo box with available serial ports."""
+        self.port_selector.clear()
+        ports = serial.tools.list_ports.comports()
+        for port in ports:
+            self.port_selector.addItem(port.device)
+
+    def connect_to_selected_port(self):
+        """Send the selected port to the RPC client to connect."""
+        if self.client:
+            selected_port = self.port_selector.currentText()
+            asyncio.create_task(self.client.connect_to_port(selected_port))
+
 
     async def setup_client(self):
         async def stream_constructor():
@@ -89,10 +122,24 @@ class IonPumpGUI(QMainWindow):
     async def poll_pressure(self):
         while True:
             try:
+                # Fetch the pressure
                 pressure = await self.client.get_pressure()
-                self.label.setText(f"Pressure: {pressure:.2e} Torr")
-                self.y_data = self.y_data[1:] + [pressure * 1e6]  # rescaled for graph
-                self.plot.setData(self.x_data, self.y_data)
+
+                # Append to time and pressure data
+                self.time_data.append(self.t)  # Time steps
+                self.pressure_data.append(pressure * 1e6)  # Pressure in microtorr
+
+                # Keep the last 100 data points for performance reasons
+                if len(self.time_data) > 100:
+                    self.time_data.pop(0)
+                    self.pressure_data.pop(0)
+
+                # Update the graph data
+                self.plot.setData(self.time_data, self.pressure_data)
+
+                # Increment the time counter for the x-axis
+                self.t += 1
+
             except Exception as e:
                 self.label.setText(f"Error: {e}")
             await asyncio.sleep(1)
@@ -107,15 +154,15 @@ class IonPumpGUI(QMainWindow):
             threshold = self.threshold_spinbox.value()
             asyncio.create_task(self.client.set_pressure_threshold(threshold))
 
-    def update_graph(self):
-        # Graph updates happen in poll_pressure (for pressure),
-        # but this is here if you want simulated data instead:
-        pass
-
     def ping_device(self):
         print("Ping button clicked!")
-        # You can later replace this with: asyncio.create_task(self.client.ping())
-
+        if self.client:
+            try:
+                # Assuming a ping method exists on the client
+                response = asyncio.create_task(self.client.ping())
+                print(f"Ping response: {response}")
+            except Exception as e:
+                print(f"Error during ping: {e}")
 
 def main():
     app = QApplication(sys.argv)
