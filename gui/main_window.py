@@ -25,8 +25,6 @@ class IonPumpGUI(QMainWindow):
         self.ping_button = QPushButton("Ping Device")
         self.ping_button.clicked.connect(self.ping_device)
 
-        self.on_button = QPushButton("Turn ON Pump")
-        self.on_button.clicked.connect(self.toggle_pump)
 
         self.threshold_spinbox = QSpinBox()
         self.threshold_spinbox.setRange(0, 10000)
@@ -55,7 +53,6 @@ class IonPumpGUI(QMainWindow):
         layout.addWidget(self.label)
         layout.addWidget(self.graph)
         layout.addWidget(self.ping_button)
-        layout.addWidget(self.on_button)
         layout.addWidget(self.threshold_spinbox)
         layout.addWidget(self.apply_button)
         layout.addWidget(self.extra_button_1)

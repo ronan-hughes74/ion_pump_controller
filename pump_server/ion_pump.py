@@ -51,18 +51,21 @@ class IonPump:
 
     async def get_voltage(self) -> float:
         """Query voltage reading (using simple command format)."""
-        resp = await self.serial.query("VR?")
+        packet = self.build_command("vr")
+        resp = await self.serial.query(packet)
         return float(resp.strip())
 
     async def get_current(self) -> float:
-        """Query current reading (using simple command format)."""
-        resp = await self.serial.query("CR?")
+        packet = self.build_command("vr")
+        resp = await self.serial.query(packet)
         return float(resp.strip())
 
-    async def get_status(self) -> str:
-        """Query status string from the pump."""
-        return await self.serial.query("STATUS?")
-
+    # Status is not an actual command, but just a placeholder
+    async def get_status(self) -> float:
+        packet = self.build_command("status")
+        resp = await self.serial.query(packet)
+        return float(resp.strip())
+        
     # --- Configuration Methods ---
 
     async def connect(self, port_name: str) -> None:
@@ -78,7 +81,7 @@ class IonPump:
 
     def set_pump_address(self, address: int) -> None:
         """Set the device's address for multi-device setups (0–99)."""
-        if not (0 <= address <= 99):
+        if not (0 <= address <= 255):
             raise ValueError("Pump address must be between 0 and 99.")
         self._pump_address = address
 

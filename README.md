@@ -12,3 +12,10 @@ ion_pump_controller/
 │   └── test_ion_pump.py     # Unit tests (with mocked serial)  
 ├── requirements.txt  
 └── README.md  
+
+
+Data Flow:
+
+main_window.py  <--RPC-->  rpc_namespace.py  <--->  ion_pump.py  <--->  Serial Device
+    
+
