@@ -1,6 +1,20 @@
-rockdove
-pydux
-anyio-serial
-qasync
-PyQt5
+# GUI and async support
+PyQt5==5.15.9
+qasync==0.24.0
+pyqtgraph==0.13.1
 
+# Async concurrency and serial communication
+anyio==3.7.1
+anyio-serial==0.6.0
+
+# Rockdove RPC framework
+rockdove==0.2.0
+
+# Your pydux extensions (assuming installed or local)
+pydux==0.1.0
+
+# Serial port utilities
+pyserial==3.5
+
+# Typing and utils (if you want to support Python versions <3.9)
+typing_extensions==4.8.0
