@@ -8,7 +8,7 @@ anyio==3.7.1
 anyio-serial==0.6.0
 
 # Rockdove RPC framework
-rockdove==0.2.0
+rockdove==(Version?)
 
 # Your pydux extensions (assuming installed or local)
 pydux==0.1.0
