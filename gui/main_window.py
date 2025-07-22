@@ -2,7 +2,6 @@
 import sys
 import asyncio
 import ssl
-import random  # (not currently used — can remove if unnecessary)
 
 # --- Serial Port Discovery ---
 import serial.tools.list_ports  # To populate available COM/serial ports
