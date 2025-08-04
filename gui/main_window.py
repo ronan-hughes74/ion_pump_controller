@@ -32,7 +32,7 @@ class IonPumpGUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Ion Pump Controller")
-        self.resize(600, 400)
+        self.resize(1920, 1080)
 
         # --- Status and Control Widgets ---
         self.label = QLabel("Status: --")
